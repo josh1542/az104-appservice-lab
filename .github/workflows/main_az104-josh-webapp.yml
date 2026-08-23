@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy ASP.Net Core app to Azure Web App - az104-josh-webapp
+name: Deploy .NET 8 app to Azure App Service
 
 on:
   push:
@@ -13,48 +10,55 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+env:
+  DOTNET_VERSION: "8.x"
+  AZURE_WEBAPP_NAME: "az104-josh-webapp"
+
 jobs:
   build:
+    name: Build application
     runs-on: windows-latest
 
-    permissions:
-      contents: read
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up .NET Core
+      - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "8.x"
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Build with dotnet
+      - name: Build application
         run: dotnet build --configuration Release
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o "${{ env.DOTNET_ROOT }}/myapp"
+      - name: Publish application
+        run: dotnet publish --configuration Release --no-build --output ./publish
 
-      - name: Upload artifact for deployment job
+      - name: Upload deployment artifact
         uses: actions/upload-artifact@v4
         with:
-          name: .net-app
-          path: ${{ env.DOTNET_ROOT }}/myapp
+          name: app
+          path: ./publish
 
   deploy:
+    name: Deploy to Azure App Service
     runs-on: windows-latest
     needs: build
 
     steps:
-      - name: Download artifact from build job
+      - name: Download deployment artifact
         uses: actions/download-artifact@v4
         with:
-          name: .net-app
+          name: app
+          path: ./publish
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
+      - name: Deploy application
         uses: azure/webapps-deploy@v3
         with:
-          app-name: "az104-josh-webapp"
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
           slot-name: "Production"
-          package: .
+          package: ./publish
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_01B6E8781692473DB086E23F4973D3AB }}

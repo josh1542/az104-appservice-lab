@@ -49,7 +49,7 @@ This demonstrates separation of application configuration from source code.
 
 ## GitHub Actions CI/CD
 
-The repository includes a GitHub Actions workflow that automatically deploys the application when changes are pushed to the `main` branch.
+The repository includes a GitHub Actions workflow that automatically deploys the application when application changes are pushed to the `main` branch.
 
 The workflow performs:
 
